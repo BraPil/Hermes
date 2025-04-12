@@ -1,0 +1,6 @@
+ticker,longName,sector,marketCap,trailingPE,forwardPE,pegRatio,priceToBook,debtToEquity,returnOnEquity
+SMCI,"Super Micro Computer, Inc.",Technology,19673896960,14.413044,7.818397,,3.153839,31.382,0.31015
+MSFT,Microsoft Corporation,Technology,2887729545216,31.351896,25.983278,,9.541412,33.998,0.34291
+NVDA,NVIDIA Corporation,Technology,2706691850240,37.731293,26.924759,,34.227093,12.946,1.1917701
+GLD,SPDR Gold Shares,N/A,77551173632,,,,1.7523541,,
+QBTS,D-Wave Quantum Inc.,Technology,2112280192,,-27.884617,,30.851065,61.26,-7.53984
