@@ -1,45 +1,46 @@
 # Import required libraries
-import yfinance as yf  # For stock market data
-import pandas as pd    # For tabular data storage + manipulation
+from logger import get_logger
+import yfinance as yf
+import pandas as pd
+
+logger = get_logger(__name__)
 
 def fetch_stock_data(tickers):
     """
     Fetch financial data for a list of stock tickers using Yahoo Finance.
-
-    Args:
-        tickers (list): List of stock ticker symbols as strings.
-
-    Returns:
-        pd.DataFrame: DataFrame containing key financial metrics.
     """
 
-    # Create a list to store each stock's data
     data_list = []
 
     for ticker in tickers:
-        stock = yf.Ticker(ticker)
+        try:
+            stock = yf.Ticker(ticker)
+            info = stock.info
 
-        # Fetch the info dictionary
-        info = stock.info
+            # Check if info dict is empty
+            if not info:
+                logger.warning(f"No data found for ticker: {ticker}")
+                continue
 
-        # Extract the data we care about
-        fundamentals = {
-            'ticker': ticker,
-            'longName': info.get('longName', 'N/A'),
-            'sector': info.get('sector', 'N/A'),
-            'marketCap': info.get('marketCap', None),
-            'trailingPE': info.get('trailingPE', None),
-            'forwardPE': info.get('forwardPE', None),
-            #'pegRatio': info.get('pegRatio', None),
-            'priceToBook': info.get('priceToBook', None),
-            'debtToEquity': info.get('debtToEquity', None),
-            'returnOnEquity': info.get('returnOnEquity', None)
-        }
+            fundamentals = {
+                'ticker': ticker,
+                'longName': info.get('longName', 'N/A'),
+                'sector': info.get('sector', 'N/A'),
+                'marketCap': info.get('marketCap', None),
+                'trailingPE': info.get('trailingPE', None),
+                'forwardPE': info.get('forwardPE', None),
+                'pegRatio': info.get('pegRatio', None),
+                'priceToBook': info.get('priceToBook', None),
+                'debtToEquity': info.get('debtToEquity', None),
+                'returnOnEquity': info.get('returnOnEquity', None)
+            }
 
-        # Append the stock data to the list
-        data_list.append(fundamentals)
+            data_list.append(fundamentals)
 
-    # Convert list of dicts to Pandas DataFrame
+            logger.info(f"Fetched data for {ticker}")
+
+        except Exception as e:
+            logger.error(f"Error fetching data for {ticker}: {e}")
+
     df = pd.DataFrame(data_list)
-
     return df
