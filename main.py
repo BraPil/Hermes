@@ -1,5 +1,6 @@
 from data_ingestion.fundamentals import fetch_stock_data
 from data_ingestion.psycho import fetch_vix_and_sp500_data
+from data_ingestion.psycho import update_fear_greed_log
 from analytics.scoring import calculate_score
 from outputs.report_generator import generate_report
 import pandas as pd
@@ -18,5 +19,6 @@ df_psycho.to_csv('C:/Hermes/Hermes/outputs/vix_sp500_data.csv')
 print(df_psycho.tail())
 print("Pysch data saved to outputs/vix_sp500_data.csv")
 
-generate_report(df)
+update_fear_greed_log()
 
+generate_report(df)
