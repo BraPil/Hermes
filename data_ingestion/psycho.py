@@ -55,48 +55,36 @@ def fetch_fear_greed_index():
     url = "https://edition.cnn.com/markets/fear-and-greed"
     logger.info("Starting Fear & Greed Index scraping...")
     
-    # Set up Selenium WebDriver with more comprehensive options
+    # Set up Selenium WebDriver with optimized options
     options = Options()
-    options.add_argument("--headless=new")  # Use new headless mode
-    options.add_argument("--ignore-certificate-errors")
-    options.add_argument("--ignore-ssl-errors")
-    options.add_argument("--disable-gpu")
+    options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--window-size=1920,1080")
-    options.add_argument("--disable-web-security")
-    options.add_argument("--allow-running-insecure-content")
+    options.add_argument("--disable-gpu")  # Disable GPU to prevent stalls
+    options.add_argument("--disable-extensions")
     options.add_argument("--disable-notifications")
     options.add_argument("--disable-popup-blocking")
-    options.add_argument("--disable-extensions")
-    options.add_argument("--disable-infobars")
-    options.add_argument("--enable-javascript")
-    options.add_argument("--enable-logging")
-    options.add_argument("--log-level=0")
-    options.add_argument("--v=99")
-    options.add_argument("--enable-unsafe-swiftshader")  # Enable software rendering
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option('useAutomationExtension', False)
-    options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36")
     
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
     
     try:
-        # Set longer timeouts
-        driver.set_page_load_timeout(60)  # Increase to 60 seconds
-        driver.implicitly_wait(20)  # Increase implicit wait
+        # Set shorter initial timeout since we know first attempt usually fails
+        driver.set_page_load_timeout(30)
+        driver.implicitly_wait(10)
         
-        # Try to load the page with retries
-        max_retries = 3
+        # Try to load the page with optimized retries
+        max_retries = 2  # Reduced from 3 since we know second attempt usually works
         for attempt in range(max_retries):
             try:
                 logger.info(f"Attempt {attempt + 1} of {max_retries}: Loading page...")
                 driver.get(url)
                 
                 # Wait for the page to be in a ready state
-                WebDriverWait(driver, 20).until(
+                WebDriverWait(driver, 10).until(
                     lambda d: d.execute_script('return document.readyState') == 'complete'
                 )
                 
@@ -107,8 +95,8 @@ def fetch_fear_greed_index():
                     logger.error(f"All attempts failed. Last error: {str(e)}")
                     raise e
                 logger.warning(f"Attempt {attempt + 1} failed: {str(e)}")
-                logger.info("Waiting 5 seconds before retrying...")
-                time.sleep(5)  # Increase wait time between retries
+                logger.info("Waiting 3 seconds before retrying...")
+                time.sleep(3)  # Reduced from 5 seconds
         
         # Wait for the page to load completely
         logger.info("Waiting for market content to appear...")
