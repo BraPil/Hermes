@@ -42,39 +42,50 @@ def fetch_vix_and_sp500_data(period='1y', interval='1d'):
 
 def fetch_fear_greed_index():
     """
-    Scrapes CNN Fear & Greed Index from their website using Selenium.
-
+    Scrapes CNN Fear & Greed Index from their website using requests and BeautifulSoup.
+    
     Returns:
         dict: Dictionary with date and fear_greed_score
     """
     url = "https://edition.cnn.com/markets/fear-and-greed"
-
-    # Set up Selenium WebDriver
-    options = Options()
-    options.add_argument("--headless")
-    options.add_argument("--ignore-certificate-errors")
-    options.add_argument("--ignore-ssl-errors")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-extensions")
-    options.add_argument("--disable-infobars")
-    options.add_argument("--disable-notifications")
-    options.add_argument("--disable-popup-blocking")
-    options.add_argument("--disable-web-security")
-    options.add_argument("--allow-running-insecure-content")
-    options.add_argument("--window-size=1920,1080")
-    options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36")
     
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=options)
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'Cache-Control': 'max-age=0'
+    }
 
     try:
-        driver.get(url)
-        # Locate the Fear & Greed score using the updated class
-        fg_score_tag = driver.find_element(By.CLASS_NAME, 'market-fng-gauge__dial-number-value')
-        score_text = fg_score_tag.text.strip()
+        # First try with SSL verification
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()  # Raise an exception for bad status codes
+        
+    except requests.exceptions.SSLError:
+        # If SSL verification fails, try without it
+        logger.warning("SSL verification failed, retrying without verification")
+        response = requests.get(url, headers=headers, verify=False, timeout=10)
+        response.raise_for_status()
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Failed to fetch Fear & Greed Index: {e}")
+        return None
 
+    try:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        # Try to find the score using different possible selectors
+        score_element = soup.find(class_='market-fng-gauge__dial-number-value')
+        
+        if not score_element:
+            # Try alternative selectors if the primary one fails
+            score_element = soup.find(class_='fear-greed-score')
+            if not score_element:
+                logger.error("Could not find Fear & Greed score on the page")
+                return None
+
+        score_text = score_element.text.strip()
         try:
             score = int(score_text)
         except ValueError:
@@ -89,11 +100,8 @@ def fetch_fear_greed_index():
         }
 
     except Exception as e:
-        logger.error(f"An error occurred while fetching Fear & Greed Index: {e}")
+        logger.error(f"An error occurred while parsing Fear & Greed Index: {e}")
         return None
-
-    finally:
-        driver.quit()
 
 ### Append Scrape Results to a .csv ###
 
