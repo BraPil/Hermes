@@ -49,6 +49,7 @@ def fetch_fear_greed_index():
         dict: Dictionary with date and fear_greed_score
     """
     url = "https://edition.cnn.com/markets/fear-and-greed"
+    logger.info("Starting Fear & Greed Index scraping...")
     
     # Set up Selenium WebDriver with more comprehensive options
     options = Options()
@@ -88,26 +89,29 @@ def fetch_fear_greed_index():
         max_retries = 3
         for attempt in range(max_retries):
             try:
+                logger.info(f"Attempt {attempt + 1} of {max_retries}: Loading page...")
                 driver.get(url)
+                logger.info("Page loaded successfully!")
                 break
             except Exception as e:
                 if attempt == max_retries - 1:
+                    logger.error(f"All attempts failed. Last error: {str(e)}")
                     raise e
-                logger.warning(f"Attempt {attempt + 1} failed, retrying...")
-                time.sleep(2)  # Wait before retrying
-        
-        logger.info("Page loaded, waiting for content...")
+                logger.warning(f"Attempt {attempt + 1} failed: {str(e)}")
+                logger.info("Waiting 2 seconds before retrying...")
+                time.sleep(2)
         
         # Wait for the page to load completely
         from selenium.webdriver.support.ui import WebDriverWait
         from selenium.webdriver.support import expected_conditions as EC
         
-        # First wait for any element with 'market' in the class name to appear
-        wait = WebDriverWait(driver, 20)  # Wait up to 20 seconds
+        logger.info("Waiting for market content to appear...")
+        wait = WebDriverWait(driver, 20)
         wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'market')]")))
+        logger.info("Market content found!")
         
         # Log the page source for debugging
-        logger.info("Page source length: " + str(len(driver.page_source)))
+        logger.info(f"Page source length: {len(driver.page_source)} characters")
         
         # Try multiple possible selectors for the score
         selectors = [
@@ -119,16 +123,19 @@ def fetch_fear_greed_index():
             "//div[contains(@class, 'market-fng')]//div"
         ]
         
+        logger.info("Searching for score element...")
         score_element = None
         for selector in selectors:
             try:
                 elements = driver.find_elements(By.XPATH, selector)
                 if elements:
-                    logger.info(f"Found elements with selector {selector}: {len(elements)}")
+                    logger.info(f"Found {len(elements)} elements with selector: {selector}")
                     for element in elements:
-                        logger.info(f"Element text: {element.text}")
-                        if any(c.isdigit() for c in element.text):
+                        text = element.text.strip()
+                        logger.info(f"Element text: '{text}'")
+                        if any(c.isdigit() for c in text):
                             score_element = element
+                            logger.info(f"Found potential score element with text: '{text}'")
                             break
                     if score_element:
                         break
@@ -137,12 +144,14 @@ def fetch_fear_greed_index():
                 continue
         
         if not score_element:
-            # Try to find any number on the page that might be the score
+            logger.info("Trying alternative method to find score...")
             all_elements = driver.find_elements(By.XPATH, "//*[text()[contains(., '0') or contains(., '1') or contains(., '2') or contains(., '3') or contains(., '4') or contains(., '5') or contains(., '6') or contains(., '7') or contains(., '8') or contains(., '9')]]")
+            logger.info(f"Found {len(all_elements)} elements containing numbers")
             for element in all_elements:
                 text = element.text.strip()
                 if text.isdigit() and 0 <= int(text) <= 100:
                     score_element = element
+                    logger.info(f"Found score element with text: '{text}'")
                     break
         
         if not score_element:
@@ -151,13 +160,13 @@ def fetch_fear_greed_index():
             
         # Get the text and clean it
         score_text = score_element.text.strip()
-        logger.info(f"Raw score text: {score_text}")
+        logger.info(f"Raw score text: '{score_text}'")
         
         # Extract numbers from the text
         import re
         numbers = re.findall(r'\d+', score_text)
         if not numbers:
-            logger.error(f"Could not extract number from score text: {score_text}")
+            logger.error(f"Could not extract number from score text: '{score_text}'")
             return None
             
         try:
@@ -166,23 +175,27 @@ def fetch_fear_greed_index():
                 logger.error(f"Score {score} is not within valid range (0-100)")
                 return None
                 
-            logger.info(f"Extracted Fear & Greed score: {score}")
+            logger.info(f"Successfully extracted Fear & Greed score: {score}")
             
-            return {
+            result = {
                 'date': datetime.now().strftime('%Y-%m-%d'),
                 'fear_greed_score': score
             }
+            logger.info(f"Returning result: {result}")
+            return result
             
         except ValueError:
             logger.error(f"Could not convert extracted number to int: {numbers[0]}")
             return None
             
     except Exception as e:
-        logger.error(f"An error occurred while fetching Fear & Greed Index: {e}")
+        logger.error(f"An error occurred while fetching Fear & Greed Index: {str(e)}")
         return None
         
     finally:
+        logger.info("Closing browser...")
         driver.quit()
+        logger.info("Browser closed successfully")
 
 ### Append Scrape Results to a .csv ###
 
