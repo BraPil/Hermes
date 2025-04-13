@@ -7,6 +7,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime
 import logging
 
@@ -51,7 +52,7 @@ def fetch_fear_greed_index():
     # Set up Selenium WebDriver
     options = Options()
     options.add_argument("--headless")  # Run in headless mode
-    service = Service("chromedriver.exe")  # ChromeDriver should be in the same directory as this script
+    service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
 
     try:
