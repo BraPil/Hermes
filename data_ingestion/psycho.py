@@ -70,9 +70,7 @@ def fetch_fear_greed_index():
     options.add_argument("--enable-logging")
     options.add_argument("--log-level=0")
     options.add_argument("--v=99")
-    options.add_argument("--single-process")
-    options.add_argument("--ignore-certificate-errors-spki-list")
-    options.add_argument("--ignore-urlfetcher-cert-requests")
+    options.add_argument("--enable-unsafe-swiftshader")  # Enable software rendering
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option('useAutomationExtension', False)
@@ -82,8 +80,9 @@ def fetch_fear_greed_index():
     driver = webdriver.Chrome(service=service, options=options)
     
     try:
-        # Set page load timeout
-        driver.set_page_load_timeout(30)
+        # Set longer timeouts
+        driver.set_page_load_timeout(60)  # Increase to 60 seconds
+        driver.implicitly_wait(20)  # Increase implicit wait
         
         # Try to load the page with retries
         max_retries = 3
@@ -91,6 +90,12 @@ def fetch_fear_greed_index():
             try:
                 logger.info(f"Attempt {attempt + 1} of {max_retries}: Loading page...")
                 driver.get(url)
+                
+                # Wait for the page to be in a ready state
+                WebDriverWait(driver, 20).until(
+                    lambda d: d.execute_script('return document.readyState') == 'complete'
+                )
+                
                 logger.info("Page loaded successfully!")
                 break
             except Exception as e:
@@ -98,15 +103,15 @@ def fetch_fear_greed_index():
                     logger.error(f"All attempts failed. Last error: {str(e)}")
                     raise e
                 logger.warning(f"Attempt {attempt + 1} failed: {str(e)}")
-                logger.info("Waiting 2 seconds before retrying...")
-                time.sleep(2)
+                logger.info("Waiting 5 seconds before retrying...")
+                time.sleep(5)  # Increase wait time between retries
         
         # Wait for the page to load completely
         from selenium.webdriver.support.ui import WebDriverWait
         from selenium.webdriver.support import expected_conditions as EC
         
         logger.info("Waiting for market content to appear...")
-        wait = WebDriverWait(driver, 20)
+        wait = WebDriverWait(driver, 30)  # Increase wait time
         
         # First try to find the main container
         main_container = wait.until(EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'market-fng')]")))
