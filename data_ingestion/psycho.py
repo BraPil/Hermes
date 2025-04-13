@@ -188,7 +188,7 @@ def fetch_fear_greed_index():
             logger.info(f"Successfully extracted Fear & Greed score: {score}")
             
             result = {
-                'date': datetime.now().strftime('%Y-%m-%d'),
+                'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                 'fear_greed_score': score
             }
             logger.info(f"Returning result: {result}")
