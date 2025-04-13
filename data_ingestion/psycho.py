@@ -50,6 +50,8 @@ def fetch_fear_greed_index():
             logger.error(f"Failed to fetch Fear & Greed Index — Status Code: {response.status_code}")
             return None
 
+        print(response.text)  # Add this line to inspect the fetched HTML
+
         soup = BeautifulSoup(response.content, 'html.parser')
 
         # Locate the Fear & Greed score using the updated class
