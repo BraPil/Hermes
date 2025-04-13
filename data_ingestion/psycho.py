@@ -10,6 +10,7 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime
 import logging
+import time
 
 #logger = get_logger(__name__)
 logger = logging.getLogger(__name__)
@@ -49,7 +50,7 @@ def fetch_fear_greed_index():
     """
     url = "https://edition.cnn.com/markets/fear-and-greed"
     
-    # Set up Selenium WebDriver
+    # Set up Selenium WebDriver with more comprehensive options
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--ignore-certificate-errors")
@@ -58,13 +59,43 @@ def fetch_fear_greed_index():
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--window-size=1920,1080")
+    options.add_argument("--disable-web-security")
+    options.add_argument("--allow-running-insecure-content")
+    options.add_argument("--disable-notifications")
+    options.add_argument("--disable-popup-blocking")
+    options.add_argument("--disable-extensions")
+    options.add_argument("--disable-infobars")
+    options.add_argument("--enable-javascript")
+    options.add_argument("--enable-logging")
+    options.add_argument("--log-level=0")
+    options.add_argument("--v=99")
+    options.add_argument("--single-process")
+    options.add_argument("--ignore-certificate-errors-spki-list")
+    options.add_argument("--ignore-urlfetcher-cert-requests")
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option('useAutomationExtension', False)
     options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36")
     
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
     
     try:
-        driver.get(url)
+        # Set page load timeout
+        driver.set_page_load_timeout(30)
+        
+        # Try to load the page with retries
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                driver.get(url)
+                break
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    raise e
+                logger.warning(f"Attempt {attempt + 1} failed, retrying...")
+                time.sleep(2)  # Wait before retrying
+        
         logger.info("Page loaded, waiting for content...")
         
         # Wait for the page to load completely
