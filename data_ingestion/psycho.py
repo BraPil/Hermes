@@ -65,15 +65,27 @@ def fetch_fear_greed_index():
     
     try:
         driver.get(url)
-        # Wait for the page to load and the score to be visible
-        driver.implicitly_wait(10)  # Wait up to 10 seconds for elements to appear
+        logger.info("Page loaded, waiting for content...")
+        
+        # Wait for the page to load completely
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        
+        # First wait for any element with 'market' in the class name to appear
+        wait = WebDriverWait(driver, 20)  # Wait up to 20 seconds
+        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'market')]")))
+        
+        # Log the page source for debugging
+        logger.info("Page source length: " + str(len(driver.page_source)))
         
         # Try multiple possible selectors for the score
         selectors = [
             "//div[contains(@class, 'market-fng-gauge__dial-number-value')]",
             "//div[contains(@class, 'fear-greed-score')]",
             "//div[contains(@class, 'market-fng-gauge__score')]",
-            "//div[contains(@class, 'fear-greed-index')]"
+            "//div[contains(@class, 'fear-greed-index')]",
+            "//div[contains(@class, 'market-fng')]//span",
+            "//div[contains(@class, 'market-fng')]//div"
         ]
         
         score_element = None
@@ -81,10 +93,26 @@ def fetch_fear_greed_index():
             try:
                 elements = driver.find_elements(By.XPATH, selector)
                 if elements:
-                    score_element = elements[0]
-                    break
-            except:
+                    logger.info(f"Found elements with selector {selector}: {len(elements)}")
+                    for element in elements:
+                        logger.info(f"Element text: {element.text}")
+                        if any(c.isdigit() for c in element.text):
+                            score_element = element
+                            break
+                    if score_element:
+                        break
+            except Exception as e:
+                logger.warning(f"Error with selector {selector}: {str(e)}")
                 continue
+        
+        if not score_element:
+            # Try to find any number on the page that might be the score
+            all_elements = driver.find_elements(By.XPATH, "//*[text()[contains(., '0') or contains(., '1') or contains(., '2') or contains(., '3') or contains(., '4') or contains(., '5') or contains(., '6') or contains(., '7') or contains(., '8') or contains(., '9')]]")
+            for element in all_elements:
+                text = element.text.strip()
+                if text.isdigit() and 0 <= int(text) <= 100:
+                    score_element = element
+                    break
         
         if not score_element:
             logger.error("Could not find Fear & Greed score element on the page")
@@ -103,6 +131,10 @@ def fetch_fear_greed_index():
             
         try:
             score = int(numbers[0])
+            if not (0 <= score <= 100):
+                logger.error(f"Score {score} is not within valid range (0-100)")
+                return None
+                
             logger.info(f"Extracted Fear & Greed score: {score}")
             
             return {
