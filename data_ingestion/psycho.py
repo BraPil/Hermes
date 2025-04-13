@@ -51,6 +51,7 @@ def fetch_fear_greed_index():
     Returns:
         dict: Dictionary with date and fear_greed_score
     """
+    start_time = time.time()
     url = "https://edition.cnn.com/markets/fear-and-greed"
     logger.info("Starting Fear & Greed Index scraping...")
     
@@ -200,11 +201,14 @@ def fetch_fear_greed_index():
     except Exception as e:
         logger.error(f"An error occurred while fetching Fear & Greed Index: {str(e)}")
         return None
-        
     finally:
-        logger.info("Closing browser...")
-        driver.quit()
-        logger.info("Browser closed successfully")
+        if driver:
+            try:
+                driver.quit()
+            except Exception as e:
+                logger.error(f"Error closing browser: {str(e)}")
+        duration = time.time() - start_time
+        logger.info(f"Scraping completed in {duration:.2f} seconds")
 
 ### Append Scrape Results to a .csv ###
 
@@ -250,6 +254,12 @@ def create_browser_session():
     proxy = get_proxy()  # Implement proxy rotation
     if proxy:
         options.add_argument(f'--proxy-server={proxy}')
+    
+    # Add SSL-specific options
+    options.add_argument("--ignore-certificate-errors")
+    options.add_argument("--ignore-ssl-errors")
+    options.add_argument("--ssl-version-max=tls1.2")
+    options.add_argument("--ssl-version-min=tls1.2")
     
     return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
