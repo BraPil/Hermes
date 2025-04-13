@@ -1,12 +1,13 @@
 from logger import get_logger
 import yfinance as yf
 import pandas as pd
-
-import requests
 from bs4 import BeautifulSoup
+import requests
 from datetime import datetime
+import logging
 
-logger = get_logger(__name__)
+#logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 def fetch_vix_and_sp500_data(period='1y', interval='1d'):
     """
@@ -41,38 +42,41 @@ def fetch_fear_greed_index():
     Returns:
         dict: Dictionary with date and fear_greed_score
     """
-
     url = "https://edition.cnn.com/markets/fear-and-greed"
 
-    response = requests.get(url)
-
-    if response.status_code != 200:
-        logger.error(f"Failed to fetch Fear & Greed Index — Status Code: {response.status_code}")
-        return None
-
-    soup = BeautifulSoup(response.content, 'html.parser')
-
-    # CNN has the score inside a <div> tag with data-testid="FearGreedMeter"
-    fg_score_tag = soup.find('div', {'data-testid': 'FearGreedMeter'})
-
-    if not fg_score_tag:
-        logger.error("Fear & Greed score tag not found!")
-        return None
-
-    score_text = fg_score_tag.text.strip()
-
     try:
-        score = int(score_text)
-    except ValueError:
-        logger.error(f"Could not convert Fear & Greed score to int: {score_text}")
+        response = requests.get(url)
+        if response.status_code != 200:
+            logger.error(f"Failed to fetch Fear & Greed Index — Status Code: {response.status_code}")
+            return None
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        # Locate the Fear & Greed score using the updated class
+        fg_score_tag = soup.find('span', {'class': 'market-fng-gauge__dial-number-value'})
+
+        if not fg_score_tag:
+            logger.error("Fear & Greed score tag not found!")
+            return None
+
+        score_text = fg_score_tag.text.strip()
+
+        try:
+            score = int(score_text)
+        except ValueError:
+            logger.error(f"Could not convert Fear & Greed score to int: {score_text}")
+            return None
+
+        logger.info(f"Fetched Fear & Greed Index Score: {score}")
+
+        return {
+            'date': datetime.now().strftime('%Y-%m-%d'),
+            'fear_greed_score': score
+        }
+
+    except Exception as e:
+        logger.error(f"An error occurred while fetching Fear & Greed Index: {e}")
         return None
-
-    logger.info(f"Fetched Fear & Greed Index Score: {score}")
-
-    return {
-        'date': datetime.now().strftime('%Y-%m-%d'),
-        'fear_greed_score': score
-    }
 
 ### Append Scrape Results to a .csv ###
 
