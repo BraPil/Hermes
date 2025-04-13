@@ -51,7 +51,7 @@ def fetch_fear_greed_index():
     # Set up Selenium WebDriver
     options = Options()
     options.add_argument("--headless")  # Run in headless mode
-    service = Service("C:/Tools/chromedriver/chromedriver.exe")  # Replace with the path to your ChromeDriver
+    service = Service("chromedriver.exe")  # ChromeDriver should be in the same directory as this script
     driver = webdriver.Chrome(service=service, options=options)
 
     try:
