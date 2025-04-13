@@ -7,10 +7,13 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime
 import logging
 import time
+import os
 
 #logger = get_logger(__name__)
 logger = logging.getLogger(__name__)
@@ -107,9 +110,6 @@ def fetch_fear_greed_index():
                 time.sleep(5)  # Increase wait time between retries
         
         # Wait for the page to load completely
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.support import expected_conditions as EC
-        
         logger.info("Waiting for market content to appear...")
         wait = WebDriverWait(driver, 30)  # Increase wait time
         
@@ -212,6 +212,10 @@ def update_fear_greed_log():
     """
     Fetch Fear & Greed Index and append to CSV log.
     """
+    # Get the correct output directory
+    output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'outputs')
+    os.makedirs(output_dir, exist_ok=True)
+    output_file = os.path.join(output_dir, 'fear_greed_log.csv')
 
     data = fetch_fear_greed_index()
 
@@ -222,11 +226,10 @@ def update_fear_greed_log():
     df_new = pd.DataFrame([data])
 
     try:
-        existing_df = pd.read_csv('outputs/fear_greed_log.csv')
+        existing_df = pd.read_csv(output_file)
         combined = pd.concat([existing_df, df_new], ignore_index=True)
     except FileNotFoundError:
         combined = df_new
 
-    combined.to_csv('outputs/fear_greed_log.csv', index=False)
-
-    logger.info("Fear & Greed log updated successfully.")
+    combined.to_csv(output_file, index=False)
+    logger.info(f"Fear & Greed log updated successfully at {output_file}")
