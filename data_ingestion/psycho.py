@@ -53,7 +53,7 @@ def fetch_fear_greed_index():
     
     # Set up Selenium WebDriver with more comprehensive options
     options = Options()
-    options.add_argument("--headless")
+    options.add_argument("--headless=new")  # Use new headless mode
     options.add_argument("--ignore-certificate-errors")
     options.add_argument("--ignore-ssl-errors")
     options.add_argument("--disable-gpu")
@@ -107,20 +107,23 @@ def fetch_fear_greed_index():
         
         logger.info("Waiting for market content to appear...")
         wait = WebDriverWait(driver, 20)
-        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'market')]")))
-        logger.info("Market content found!")
         
-        # Log the page source for debugging
-        logger.info(f"Page source length: {len(driver.page_source)} characters")
+        # First try to find the main container
+        main_container = wait.until(EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'market-fng')]")))
+        logger.info("Main container found!")
+        
+        # Take a screenshot for debugging
+        driver.save_screenshot("fear_greed_debug.png")
+        logger.info("Screenshot saved as fear_greed_debug.png")
         
         # Try multiple possible selectors for the score
         selectors = [
             "//div[contains(@class, 'market-fng-gauge__dial-number-value')]",
-            "//div[contains(@class, 'fear-greed-score')]",
             "//div[contains(@class, 'market-fng-gauge__score')]",
-            "//div[contains(@class, 'fear-greed-index')]",
-            "//div[contains(@class, 'market-fng')]//span",
-            "//div[contains(@class, 'market-fng')]//div"
+            "//div[contains(@class, 'market-fng-gauge')]//span[contains(@class, 'number')]",
+            "//div[contains(@class, 'market-fng-gauge')]//div[contains(@class, 'value')]",
+            "//div[contains(@class, 'market-fng-gauge')]//div[contains(@class, 'score')]",
+            "//div[contains(@class, 'market-fng-gauge')]//div[contains(@class, 'dial')]//span"
         ]
         
         logger.info("Searching for score element...")
@@ -145,7 +148,8 @@ def fetch_fear_greed_index():
         
         if not score_element:
             logger.info("Trying alternative method to find score...")
-            all_elements = driver.find_elements(By.XPATH, "//*[text()[contains(., '0') or contains(., '1') or contains(., '2') or contains(., '3') or contains(., '4') or contains(., '5') or contains(., '6') or contains(., '7') or contains(., '8') or contains(., '9')]]")
+            # Try to find any number within the main container
+            all_elements = main_container.find_elements(By.XPATH, ".//*[text()[contains(., '0') or contains(., '1') or contains(., '2') or contains(., '3') or contains(., '4') or contains(., '5') or contains(., '6') or contains(., '7') or contains(., '8') or contains(., '9')]]")
             logger.info(f"Found {len(all_elements)} elements containing numbers")
             for element in all_elements:
                 text = element.text.strip()
