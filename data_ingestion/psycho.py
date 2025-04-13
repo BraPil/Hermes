@@ -3,6 +3,10 @@ import yfinance as yf
 import pandas as pd
 from bs4 import BeautifulSoup
 import requests
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from datetime import datetime
 import logging
 
@@ -37,30 +41,23 @@ def fetch_vix_and_sp500_data(period='1y', interval='1d'):
 
 def fetch_fear_greed_index():
     """
-    Scrapes CNN Fear & Greed Index from their website.
+    Scrapes CNN Fear & Greed Index from their website using Selenium.
 
     Returns:
         dict: Dictionary with date and fear_greed_score
     """
     url = "https://edition.cnn.com/markets/fear-and-greed"
 
+    # Set up Selenium WebDriver
+    options = Options()
+    options.add_argument("--headless")  # Run in headless mode
+    service = Service("path/to/chromedriver")  # Replace with the path to your ChromeDriver
+    driver = webdriver.Chrome(service=service, options=options)
+
     try:
-        response = requests.get(url)
-        if response.status_code != 200:
-            logger.error(f"Failed to fetch Fear & Greed Index — Status Code: {response.status_code}")
-            return None
-
-        print(response.text)  # Add this line to inspect the fetched HTML
-
-        soup = BeautifulSoup(response.content, 'html.parser')
-
+        driver.get(url)
         # Locate the Fear & Greed score using the updated class
-        fg_score_tag = soup.find('span', {'class': 'market-fng-gauge__dial-number-value'})
-
-        if not fg_score_tag:
-            logger.error("Fear & Greed score tag not found!")
-            return None
-
+        fg_score_tag = driver.find_element(By.CLASS_NAME, 'market-fng-gauge__dial-number-value')
         score_text = fg_score_tag.text.strip()
 
         try:
@@ -79,6 +76,9 @@ def fetch_fear_greed_index():
     except Exception as e:
         logger.error(f"An error occurred while fetching Fear & Greed Index: {e}")
         return None
+
+    finally:
+        driver.quit()
 
 ### Append Scrape Results to a .csv ###
 
