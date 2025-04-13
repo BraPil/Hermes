@@ -233,3 +233,35 @@ def update_fear_greed_log():
 
     combined.to_csv(output_file, index=False)
     logger.info(f"Fear & Greed log updated successfully at {output_file}")
+
+def create_browser_session():
+    """Create a reusable browser session with improved configuration"""
+    options = Options()
+    # Add existing options...
+    
+    # Add new options for better stability
+    options.add_argument("--disable-software-rasterizer")
+    options.add_argument("--disable-features=NetworkService")
+    options.add_argument("--disable-features=NetworkServiceInProcess")
+    options.add_argument("--disable-features=IsolateOrigins")
+    options.add_argument("--disable-site-isolation-trials")
+    
+    # Add proxy support
+    proxy = get_proxy()  # Implement proxy rotation
+    if proxy:
+        options.add_argument(f'--proxy-server={proxy}')
+    
+    return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
+def exponential_backoff(max_retries=5, base_delay=1):
+    """Implement exponential backoff for retries"""
+    for attempt in range(max_retries):
+        try:
+            yield
+            return
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise
+            delay = base_delay * (2 ** attempt)
+            logger.warning(f"Attempt {attempt + 1} failed. Retrying in {delay} seconds...")
+            time.sleep(delay)
