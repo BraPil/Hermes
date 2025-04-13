@@ -42,66 +42,84 @@ def fetch_vix_and_sp500_data(period='1y', interval='1d'):
 
 def fetch_fear_greed_index():
     """
-    Scrapes CNN Fear & Greed Index from their website using requests and BeautifulSoup.
+    Scrapes CNN Fear & Greed Index from their website using Selenium.
     
     Returns:
         dict: Dictionary with date and fear_greed_score
     """
     url = "https://edition.cnn.com/markets/fear-and-greed"
     
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1',
-        'Cache-Control': 'max-age=0'
-    }
-
+    # Set up Selenium WebDriver
+    options = Options()
+    options.add_argument("--headless")
+    options.add_argument("--ignore-certificate-errors")
+    options.add_argument("--ignore-ssl-errors")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--window-size=1920,1080")
+    options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36")
+    
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=options)
+    
     try:
-        # First try with SSL verification
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()  # Raise an exception for bad status codes
+        driver.get(url)
+        # Wait for the page to load and the score to be visible
+        driver.implicitly_wait(10)  # Wait up to 10 seconds for elements to appear
         
-    except requests.exceptions.SSLError:
-        # If SSL verification fails, try without it
-        logger.warning("SSL verification failed, retrying without verification")
-        response = requests.get(url, headers=headers, verify=False, timeout=10)
-        response.raise_for_status()
+        # Try multiple possible selectors for the score
+        selectors = [
+            "//div[contains(@class, 'market-fng-gauge__dial-number-value')]",
+            "//div[contains(@class, 'fear-greed-score')]",
+            "//div[contains(@class, 'market-fng-gauge__score')]",
+            "//div[contains(@class, 'fear-greed-index')]"
+        ]
         
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Failed to fetch Fear & Greed Index: {e}")
-        return None
-
-    try:
-        soup = BeautifulSoup(response.text, 'html.parser')
-        # Try to find the score using different possible selectors
-        score_element = soup.find(class_='market-fng-gauge__dial-number-value')
+        score_element = None
+        for selector in selectors:
+            try:
+                elements = driver.find_elements(By.XPATH, selector)
+                if elements:
+                    score_element = elements[0]
+                    break
+            except:
+                continue
         
         if not score_element:
-            # Try alternative selectors if the primary one fails
-            score_element = soup.find(class_='fear-greed-score')
-            if not score_element:
-                logger.error("Could not find Fear & Greed score on the page")
-                return None
-
-        score_text = score_element.text.strip()
-        try:
-            score = int(score_text)
-        except ValueError:
-            logger.error(f"Could not convert Fear & Greed score to int: {score_text}")
+            logger.error("Could not find Fear & Greed score element on the page")
             return None
-
-        logger.info(f"Fetched Fear & Greed Index Score: {score}")
-
-        return {
-            'date': datetime.now().strftime('%Y-%m-%d'),
-            'fear_greed_score': score
-        }
-
+            
+        # Get the text and clean it
+        score_text = score_element.text.strip()
+        logger.info(f"Raw score text: {score_text}")
+        
+        # Extract numbers from the text
+        import re
+        numbers = re.findall(r'\d+', score_text)
+        if not numbers:
+            logger.error(f"Could not extract number from score text: {score_text}")
+            return None
+            
+        try:
+            score = int(numbers[0])
+            logger.info(f"Extracted Fear & Greed score: {score}")
+            
+            return {
+                'date': datetime.now().strftime('%Y-%m-%d'),
+                'fear_greed_score': score
+            }
+            
+        except ValueError:
+            logger.error(f"Could not convert extracted number to int: {numbers[0]}")
+            return None
+            
     except Exception as e:
-        logger.error(f"An error occurred while parsing Fear & Greed Index: {e}")
+        logger.error(f"An error occurred while fetching Fear & Greed Index: {e}")
         return None
+        
+    finally:
+        driver.quit()
 
 ### Append Scrape Results to a .csv ###
 
