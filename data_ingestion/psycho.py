@@ -247,11 +247,6 @@ def create_browser_session():
     options.add_argument("--disable-features=IsolateOrigins")
     options.add_argument("--disable-site-isolation-trials")
     
-    # Add proxy support
-    proxy = get_proxy()  # Implement proxy rotation
-    if proxy:
-        options.add_argument(f'--proxy-server={proxy}')
-    
     # Add SSL-specific options
     options.add_argument("--ignore-certificate-errors")
     options.add_argument("--ignore-ssl-errors")

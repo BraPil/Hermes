@@ -8,6 +8,7 @@ import time
 from typing import List, Dict
 import os
 from dotenv import load_dotenv
+from transformers import pipeline
 
 # Load environment variables
 load_dotenv()
@@ -15,7 +16,7 @@ load_dotenv()
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Load HuggingFace Sentiment Model once (global)
+# Initialize sentiment pipeline
 sentiment_pipeline = pipeline("sentiment-analysis")
 
 class RedditSentimentAnalyzer:
@@ -24,7 +25,7 @@ class RedditSentimentAnalyzer:
         self.reddit = praw.Reddit(
             client_id=os.getenv('REDDIT_CLIENT_ID'),
             client_secret=os.getenv('REDDIT_CLIENT_SECRET'),
-            user_agent='Hermes Market Analysis Bot v1.0'
+            user_agent=os.getenv('REDDIT_USER_AGENT')
         )
         self.subreddits = ['wallstreetbets', 'stocks', 'investing']
         self.rate_limit_delay = 2  # seconds between API calls
