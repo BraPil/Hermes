@@ -198,12 +198,23 @@ def update_social_sentiment_log(watchlist: List[str]):
         
         try:
             # Try to read existing log
-            existing_df = pd.read_csv(output_file)
-            combined = pd.concat([existing_df, sentiment_summary], ignore_index=True)
-        except FileNotFoundError:
-            combined = sentiment_summary
+            if os.path.exists(output_file):
+                existing_df = pd.read_csv(output_file)
+                combined = pd.concat([existing_df, sentiment_summary], ignore_index=True)
+            else:
+                combined = sentiment_summary
+                
+            # Save the combined data
+            combined.to_csv(output_file, index=False)
+            logger.info(f"Social sentiment log updated at {output_file}")
             
-        combined.to_csv(output_file, index=False)
-        logger.info(f"Social sentiment log updated at {output_file}")
+        except Exception as e:
+            logger.error(f"Error updating social sentiment log: {str(e)}")
+            # Try to save just the new data if there was an error
+            try:
+                sentiment_summary.to_csv(output_file, index=False)
+                logger.info(f"Saved new social sentiment data to {output_file}")
+            except Exception as e2:
+                logger.error(f"Failed to save new social sentiment data: {str(e2)}")
     else:
         logger.warning("No sentiment data to log")

@@ -227,13 +227,25 @@ def update_fear_greed_log():
     df_new = pd.DataFrame([data])
 
     try:
-        existing_df = pd.read_csv(output_file)
-        combined = pd.concat([existing_df, df_new], ignore_index=True)
-    except FileNotFoundError:
-        combined = df_new
-
-    combined.to_csv(output_file, index=False)
-    logger.info(f"Fear & Greed log updated successfully at {output_file}")
+        # Try to read existing log
+        if os.path.exists(output_file):
+            existing_df = pd.read_csv(output_file)
+            combined = pd.concat([existing_df, df_new], ignore_index=True)
+        else:
+            combined = df_new
+            
+        # Save the combined data
+        combined.to_csv(output_file, index=False)
+        logger.info(f"Fear & Greed log updated successfully at {output_file}")
+        
+    except Exception as e:
+        logger.error(f"Error updating Fear & Greed log: {str(e)}")
+        # Try to save just the new data if there was an error
+        try:
+            df_new.to_csv(output_file, index=False)
+            logger.info(f"Saved new Fear & Greed data to {output_file}")
+        except Exception as e2:
+            logger.error(f"Failed to save new Fear & Greed data: {str(e2)}")
 
 def create_browser_session():
     """Create a reusable browser session with improved configuration"""
