@@ -11,9 +11,32 @@ import os
 outputs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'outputs')
 os.makedirs(outputs_dir, exist_ok=True)
 
-watchlist = ['AAPL', 'MSFT', 'NVDA', 'TSLA', 'AMZN']
+# Custom watchlist: Quantum, inverse ETFs, tech, and BTC
+watchlist = [
+    'SQQQ',    # Inverse Nasdaq-100
+    'UVXY',    # Inverse VIX (volatility play)
+    'SPXU',    # Inverse S&P 500
+    'RNA',     # Moderna (biotech)
+    'DYN',     # Dynamics
+    'MSFT',    # Microsoft (tech)
+    'GOOGL',   # Google (tech)
+    'INTC',    # Intel (semiconductor)
+    'AMD',     # AMD (semiconductor)
+    'GLD',     # Gold ETF (commodity)
+    'RGTI',    # Rigetti Computing (quantum)
+    'QBTS',    # D-Wave Systems (quantum)
+    'IONQ',    # IonQ (quantum)
+    'QUBT',    # Quantum Computing (quantum)
+    'QMCO',    # Quantum Computing (quantum)
+    'BTC-USD'  # Bitcoin (cryptocurrency)
+]
 
-tickers = ['AAPL', 'MSFT', 'NVDA', 'TSLA', 'AMZN']
+tickers = [
+    'SQQQ', 'UVXY', 'SPXU', 'RNA', 'DYN',
+    'MSFT', 'GOOGL', 'INTC', 'AMD', 'GLD',
+    'RGTI', 'QBTS', 'IONQ', 'QUBT', 'QMCO',
+    'BTC-USD'
+]
 
 # Fundamentals
 df = fetch_stock_data(tickers)

@@ -1,0 +1,268 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║                  ✅ PHASE 1: CUSTOM WATCHLIST CONFIGURED                  ║
+║                                                                            ║
+║                        READY TO EXECUTE - ANALYSIS                        ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+
+📊 YOUR CUSTOM PORTFOLIO
+════════════════════════════════════════════════════════════════════════════
+
+16 Assets Ready for Analysis:
+
+INVERSE ETFs (Hedging):
+  ✓ SQQQ    - 3x Inverse Nasdaq-100
+  ✓ UVXY    - Inverse VIX / Volatility
+  ✓ SPXU    - 3x Inverse S&P 500
+
+TECHNOLOGY (Growth):
+  ✓ MSFT    - Microsoft
+  ✓ GOOGL   - Google/Alphabet
+  ✓ INTC    - Intel
+  ✓ AMD     - AMD Semiconductors
+
+QUANTUM COMPUTING (Speculative):
+  ✓ RGTI    - Rigetti Computing
+  ✓ QBTS    - D-Wave Systems
+  ✓ IONQ    - IonQ
+  ✓ QUBT    - Quantum Computing Inc.
+  ✓ QMCO    - Quantum Computing
+
+OTHER (Diversification):
+  ✓ RNA     - Moderna (Biotech)
+  ✓ DYN     - Dynamics
+  ✓ GLD     - Gold ETF (Commodity)
+  ✓ BTC-USD - Bitcoin (Cryptocurrency)
+
+
+📁 FILES UPDATED
+════════════════════════════════════════════════════════════════════════════
+
+✅ main.py                   - Watchlist updated (16 assets)
+✅ README.md                 - Project description updated
+✅ QUICK_START.md            - Watchlist section added
+✅ CUSTOM_WATCHLIST.md       - Detailed asset analysis
+✅ WATCHLIST_UPDATE_SUMMARY  - Change documentation
+✅ PHASE_1_READY.txt         - This file
+
+
+🎯 PHASE 1 EXECUTION STEPS
+════════════════════════════════════════════════════════════════════════════
+
+You are currently on Step 1 of 8:
+
+
+STEP 1: Create .env File (5-10 min) ← YOU ARE HERE
+─────────────────────────────────────
+1a. Get Reddit Credentials (free):
+    • Go to: https://www.reddit.com/prefs/apps
+    • Click "Create an app"
+    • Type: "script"
+    • Copy: client_id and client_secret
+
+1b. Create .env file:
+    Location: C:\Hermes\.env
+    
+    Add these lines:
+    ─────────────────────────────────
+    REDDIT_CLIENT_ID=your_id_here
+    REDDIT_CLIENT_SECRET=your_secret_here
+    REDDIT_USER_AGENT=YourUsername/1.0
+    ─────────────────────────────────
+
+WHEN DONE: Come back and we proceed to Step 2!
+
+
+STEP 2: Create outputs/ Directory (1 min)
+─────────────────────────────────────────
+Run in PowerShell:
+  cd C:\Hermes
+  mkdir outputs
+
+WHEN DONE: Proceed to Step 3
+
+
+STEP 3: Install Dependencies (3-5 min)
+─────────────────────────────────────────
+Run in PowerShell:
+  cd C:\Hermes
+  pip install -r requirements.txt
+  pip install yfinance selenium webdriver-manager beautifulsoup4 tabulate
+
+WHEN DONE: Proceed to Step 4
+
+
+STEP 4: Verify Imports (2 min)
+─────────────────────────────────────────
+Run each command:
+  python -c "from data_ingestion.fundamentals import fetch_stock_data; print('✓')"
+  python -c "from data_ingestion.psycho import fetch_vix_and_sp500_data; print('✓')"
+  python -c "from data_ingestion.social import RedditSentimentAnalyzer; print('✓')"
+  python -c "from analytics.scoring import calculate_score; print('✓')"
+  python -c "from outputs.report_generator import generate_report; print('✓')"
+
+Expected: 5 checkmarks (✓✓✓✓✓)
+
+WHEN DONE: Proceed to Step 5
+
+
+STEP 5: Single Asset Test - BTC-USD (2 min) - OPTIONAL
+─────────────────────────────────────────────────────────
+Edit main.py lines 15-39:
+  Change watchlist = ['SQQQ', ...] to ['BTC-USD']
+  Change tickers = ['SQQQ', ...] to ['BTC-USD']
+
+Run:
+  python main.py
+
+Should see output and complete in ~2 minutes
+
+WHEN DONE: Proceed to Step 6
+
+
+STEP 6: Full 16-Asset Run (4-5 min)
+─────────────────────────────────────
+Restore main.py to full watchlist (16 assets)
+
+Run:
+  python main.py
+
+Watch for:
+  ✓ Fundamentals scoring
+  ✓ VIX/S&P data
+  ✓ Fear & Greed scraping
+  ✓ Reddit analysis (takes ~90 sec)
+  ✓ Final report
+
+WHEN DONE: Proceed to Step 7
+
+
+STEP 7: Validate Outputs (5 min)
+──────────────────────────────────
+Check files exist:
+  dir C:\Hermes\outputs\
+
+Should see 5 files:
+  ✓ fundamentals_scored.csv
+  ✓ weighted_score.csv
+  ✓ social_sentiment_log.csv
+  ✓ fear_greed_log.csv
+  ✓ vix_sp500_data.csv
+
+Check scores:
+  type C:\Hermes\outputs\weighted_score.csv
+
+Expected: 16 rows with scores 0-100
+
+WHEN DONE: You're at Step 8
+
+
+STEP 8: Celebrate! 🎉
+────────────────────────
+Phase 1 Complete!
+
+You now have:
+  ✓ Working stock analysis system
+  ✓ 16-asset portfolio analyzed
+  ✓ CSV outputs with scores
+  ✓ Historical data logged
+
+
+⏱️ TOTAL TIME FOR PHASE 1
+════════════════════════════════════════════════════════════════════════════
+
+Step 1: Create .env             5-10 min
+Step 2: Create outputs/         1 min
+Step 3: Install deps            3-5 min
+Step 4: Verify imports          2 min
+Step 5: Single test             2 min (optional)
+Step 6: Full 16-asset run       4-5 min
+Step 7: Validate outputs        5 min
+─────────────────────────────
+TOTAL:                          22-32 min
+
+
+📊 EXPECTED RESULTS
+════════════════════════════════════════════════════════════════════════════
+
+After Phase 1 completes, you'll have:
+
+weighted_score.csv (Sample Output):
+┌──────────┬────────────────┐
+│ ticker   │ weighted_score │
+├──────────┼────────────────┤
+│ MSFT     │     72.5       │ ← Tech, strong
+│ GOOGL    │     70.1       │ ← Tech, strong
+│ BTC-USD  │     65.2       │ ← Crypto sentiment
+│ AMD      │     68.4       │ ← Tech, good
+│ INTC     │     62.3       │ ← Tech, decent
+│ IONQ     │     58.3       │ ← Quantum sentiment
+│ QBTS     │     52.1       │ ← Quantum
+│ RNA      │     55.7       │ ← Biotech
+│ GLD      │     48.2       │ ← Commodity
+│ RGTI     │     45.0       │ ← Quantum early
+│ QUBT     │     42.8       │ ← Quantum early
+│ QMCO     │     40.1       │ ← Quantum early
+│ DYN      │     35.4       │ ← Limited data
+│ SQQQ     │     32.1       │ ← Inverse (low by design)
+│ UVXY     │     28.5       │ ← Inverse VIX
+│ SPXU     │     25.3       │ ← Inverse S&P
+└──────────┴────────────────┘
+
+Plus 4 other CSV files with detailed data!
+
+
+⚠️ THINGS TO KNOW
+════════════════════════════════════════════════════════════════════════════
+
+1. INVERSE ETFs Score LOW by Design
+   - SQQQ, UVXY, SPXU are meant to move opposite to markets
+   - When market UP, they score LOW (expected!)
+   - When market DOWN, they score HIGH (expected!)
+
+2. BTC-USD Has No Traditional Fundamentals
+   - No P/E ratio
+   - No company metrics
+   - Reddit sentiment becomes primary signal
+
+3. Quantum Stocks May Have Limited Data
+   - Early-stage companies
+   - May be missing historical metrics
+   - System gracefully handles missing data
+
+4. Execution Time Is Longer
+   - 16 assets instead of 5
+   - Reddit analysis: ~90-120 seconds
+   - Total: ~4-5 minutes (vs ~3 minutes with 5 assets)
+
+5. All Errors Are Gracefully Handled
+   - If API fails, system continues
+   - If data missing, it skips that metric
+   - You'll always get output
+
+
+🚀 YOU'RE READY!
+════════════════════════════════════════════════════════════════════════════
+
+Everything is configured. Your custom watchlist is set up.
+
+Next Action: Create .env file
+
+→ Get Reddit credentials at: https://www.reddit.com/prefs/apps
+→ Create C:\Hermes\.env with your credentials
+→ Reply when ready for Step 2
+
+
+════════════════════════════════════════════════════════════════════════════
+
+Questions? Read:
+  • CUSTOM_WATCHLIST.md       (Asset details)
+  • QUICK_START.md            (Setup guide)
+  • PHASE_1_IMPLEMENTATION.md (Detailed steps)
+
+Ready to begin Phase 1? Let's go! 🎯
+
+════════════════════════════════════════════════════════════════════════════
+
